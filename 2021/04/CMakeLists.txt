@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.24)
 project(adventofcode2021problem06
 	DESCRIPTION
 		"Solves problem 6"
@@ -11,12 +11,14 @@ find_package(fmt CONFIG REQUIRED)
 add_executable(adventofcode2021problem06
 	src/main.cpp
 	vcpkg.json
+	CMakePresets.json
 )
 
 if (MSVC)
 	target_compile_options(adventofcode2021problem06
 		PRIVATE
 			/W3 /WX /permissive-
+			"/wd26451"
 	)
 else()
 	target_compile_options(adventofcode2021problem06
@@ -27,8 +29,8 @@ endif()
 
 
 target_link_libraries(adventofcode2021problem06
-	PUBLIC
-		fmt
+	PRIVATE
+		fmt::fmt
 )
 
 set_target_properties(adventofcode2021problem06
