@@ -1,11 +1,12 @@
 {
-	"name": "adventofcode2021problem06",
+	"name": "adventofcode2021problem04",
 	"version-string": "0.1.0",
 	"port-version": 1,
-	"homepage": "https://github.com/mwthinker/adventofcode2021_problem06",
+	"homepage": "https://github.com/mwthinker/adventofcode/2021/06/",
 	"description": "A C++ Calculator api to evaluate mathematical expressions during runtime.",
 	"license": "MIT",
 	"dependencies": [
-		"fmt"
+		"fmt",
+		"bfgroup-lyra"
 	]
 }
