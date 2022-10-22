@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 project(adventofcode2021problem04
 	DESCRIPTION
-		"Solves problem 6"
+		"Solves problem 4"
 	LANGUAGES
 		CXX
 )
@@ -14,6 +14,8 @@ add_executable(adventofcode2021problem04
 	vcpkg.json
 	CMakePresets.json
 )
+
+file(COPY ${adventofcode2021problem04_SOURCE_DIR}/data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) 
 
 if (MSVC)
 	target_compile_options(adventofcode2021problem04
