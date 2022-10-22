@@ -52,7 +52,10 @@ public:
 	}
 
 	bool isMarked(int x, int y) const {
-		return values_[y * 5 + x].marked;
+		if (x >= 0 && x < 5 && y >= 0 && y < 5) {
+			return values_[y * 5 + x].marked;
+		}
+		return false;
 	}
 
 	void mark(int nbr) {
@@ -88,11 +91,15 @@ public:
 		return false;
 	}
 
-
+	Value operator()(int x, int y) const {
+		return values_[y * 5 + x];
+	}
 
 	int calculateWinningNumber() const {
 		return sumUnmarkedValues() * lastDrawNbr;
 	}
+
+	int getDrawnNbrs() {}
 
 private:
 	int sumUnmarkedValues() const {
@@ -109,8 +116,19 @@ private:
 	std::vector<Value> values_;
 };
 
-Board calculateWinner(std::vector<Board> boards, std::vector<int> numbers) {
-	for (int nbr : Draw) {
+std::ostream& operator<<(std::ostream& out, const Board& board) {
+	for (int i = 0; i < 5; ++i) {
+		for (int j = 0; j < 5; ++j) {
+			const auto& value = board(j, i);
+			out << value.nbr << (value.marked ? "x " : "  ");
+		}
+		out << '\n';
+	}
+	return out;
+}
+
+Board calculateFirstWinner(std::vector<Board> boards, std::vector<int> numbers) {
+	for (int nbr : numbers) {
 		for (auto& board : boards) {
 			board.mark(nbr);
 
@@ -142,11 +160,13 @@ FileContent readFromFile(const std::string& filename) {
 	FileContent fileContent;
 
 	std::ifstream infile{filename};
+	infile.exceptions(std::ifstream::badbit);
 
-	std::string data;
-	std::getline(infile, data);
+	std::string row;
+	std::getline(infile, row);
+	std::replace(row.begin(), row.end(), ',', ' ');
 
-	fileContent.firstRow = extractNumbers(data);
+	fileContent.firstRow = extractNumbers(row);
 	
 	int nbr;
 	while (infile >> nbr) {
@@ -166,7 +186,7 @@ FileContent readDefaultBoard() {
 
 std::vector<Board> extractBoards(const std::vector<int>& numbers) {
 	if (numbers.size() % BoardSize != 0) {
-		throw std::runtime_error{""};
+		throw std::runtime_error{"Could not extract boards"};
 	}
 
 	int size = static_cast<int>(numbers.size()) / BoardSize;
@@ -180,6 +200,8 @@ std::vector<Board> extractBoards(const std::vector<int>& numbers) {
 
 
 template <> struct fmt::formatter<lyra::cli> : ostream_formatter {};
+
+template <> struct fmt::formatter<Board> : ostream_formatter {};
 
 int main(int argc, char** argv) {
 	std::string datafile;
@@ -212,16 +234,21 @@ int main(int argc, char** argv) {
 			auto fileContent = readFromFile(datafile);
 			draw = fileContent.firstRow;
 			data = fileContent.data;
-		} catch (const std::exception& exception) {
-			fmt::print(std::cerr, "Something wrong with the data, error: {}", exception.what());
+		} catch (const std::ios_base::failure& fail) {
+			fmt::print(std::cerr, "Something wrong with the data, error: {}", fail.what());
 			return 1;
 		}
 	}
+	try {
+		std::vector<Board> boards = extractBoards(data);
 
-	std::vector<Board> boards = extractBoards(data);
+		Board winner = calculateFirstWinner(boards, draw);
+		fmt::print("Answer1: {}\n", winner.calculateWinningNumber());
+		fmt::print("Board: \n{}\n", winner);
+	} catch (const std::exception& exception) {
+		fmt::print(std::cerr, "Something wrong with the data, error: {}", exception.what());
 
-	Board winner = calculateWinner(boards, draw);
-
-	fmt::print("Answer: {}\n", winner.calculateWinningNumber());
+		return 1;
+	}
 	return 0;
 }
