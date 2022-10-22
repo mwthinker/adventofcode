@@ -52,8 +52,9 @@ public:
 	}
 
 	bool isMarked(int x, int y) const {
-		if (x >= 0 && x < 5 && y >= 0 && y < 5) {
-			return values_[y * 5 + x].marked;
+		int index = y * 5 + x;
+		if (index >= 0 && index < values_.size()) {
+			return values_[index].marked;
 		}
 		return false;
 	}
@@ -92,7 +93,11 @@ public:
 	}
 
 	Value operator()(int x, int y) const {
-		return values_[y * 5 + x];
+		int index = y * 5 + x;
+		if (index >= 0 && index < values_.size()) {
+			return values_[index];
+		}
+		return {};
 	}
 
 	int calculateWinningNumber() const {
@@ -127,17 +132,32 @@ std::ostream& operator<<(std::ostream& out, const Board& board) {
 	return out;
 }
 
-Board calculateFirstWinner(std::vector<Board> boards, std::vector<int> numbers) {
+struct Winner {
+	Board first;
+	Board last;
+};
+
+Winner calculateWinner(std::vector<Board> boards, std::vector<int> numbers) {
+	std::vector<Board> winners;
+	
 	for (int nbr : numbers) {
 		for (auto& board : boards) {
-			board.mark(nbr);
+			if (!board.winner()) {
+				board.mark(nbr);
 
-			if (board.winner()) {
-				return board;
+				if (board.winner()) {
+					winners.push_back(board);
+				}
 			}
 		}
 	}
-	return {};
+	if (winners.empty()) {
+		return {};
+	}
+	return Winner{
+		.first = winners.front(),
+		.last = winners.back()
+	};
 }
 
 struct FileContent {
@@ -198,7 +218,6 @@ std::vector<Board> extractBoards(const std::vector<int>& numbers) {
 	return boards;
 }
 
-
 template <> struct fmt::formatter<lyra::cli> : ostream_formatter {};
 
 template <> struct fmt::formatter<Board> : ostream_formatter {};
@@ -242,9 +261,11 @@ int main(int argc, char** argv) {
 	try {
 		std::vector<Board> boards = extractBoards(data);
 
-		Board winner = calculateFirstWinner(boards, draw);
-		fmt::print("Answer1: {}\n", winner.calculateWinningNumber());
-		fmt::print("Board: \n{}\n", winner);
+		Winner winner = calculateWinner(boards, draw);
+		fmt::print("Answer1: {}\n", winner.first.calculateWinningNumber());
+		fmt::print("Board: \n{}\n", winner.first);
+		fmt::print("Answer2: {}\n", winner.last.calculateWinningNumber());
+		fmt::print("Board: \n{}\n", winner.last);
 	} catch (const std::exception& exception) {
 		fmt::print(std::cerr, "Something wrong with the data, error: {}", exception.what());
 
