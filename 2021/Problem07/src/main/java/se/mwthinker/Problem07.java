@@ -8,31 +8,28 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 class CrabGroup {
-    private int pos;
-    private int crabs = 0;
-    private int distance = 0;
+    final private int pos;
+    private int crabs = 1;
 
     CrabGroup(int pos) {
         this.pos = pos;
     }
 
-    void walk(int distance) {
-        this.distance += distance;
-        pos += distance;
+    int walkToPos(int pos) {
+        return Math.abs(pos - getPos()) * crabs;
     }
 
     int getPos() {
         return pos;
-    }
-
-    int getFuel() {
-        return crabs * pos;
     }
 
     void addCrab() {
@@ -55,10 +52,39 @@ public class Problem07 implements Callable<Integer> {
     }
 
     private void solve(List<Integer> positions) {
+        Map<Integer, CrabGroup> posToCrabGroup = new HashMap<>();
+        positions.forEach(pos -> {
+            posToCrabGroup.compute(pos, (position, crabGroup) -> {
+                if (crabGroup == null) {
+                    return new CrabGroup(position);
+                }
+                crabGroup.addCrab();
+                return crabGroup;
+            });
+        });
+
+        int lowest = posToCrabGroup.values().stream().mapToInt(crabGroup -> crabGroup.getPos()).min().getAsInt();
+        int highest = posToCrabGroup.values().stream().mapToInt(crabGroup -> crabGroup.getPos()).max().getAsInt();
+
+        //int fuel = posToCrabGroup.values().stream().mapToInt(CrabGroup::getFuel).sum();
+
+        int minFuel = Integer.MAX_VALUE;
+        int optimalPos = lowest;
+        for (int pos = lowest; pos <= highest; ++pos) {
+            int finalPos = pos;
+            int fuel = posToCrabGroup.values().stream()
+                    .mapToInt(crabGroup -> crabGroup.walkToPos(finalPos)).sum();
+            if (fuel < minFuel) {
+                minFuel = fuel;
+                optimalPos = pos;
+            }
+        }
+
+
         if (print) {
 
         }
-        System.out.println("\nLeast possible fuel: " + 1);
+        System.out.println("\nLeast possible fuel: " + minFuel + " Pos: " + optimalPos);
     }
 
     @Override
