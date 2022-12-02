@@ -101,7 +101,6 @@ public class Problem07 implements Callable<Integer> {
     public Integer call() {
         try {
             List<Integer> positions = readFile();
-
             solve(positions);
         } catch (Exception e) {
             System.out.println(e.getMessage());

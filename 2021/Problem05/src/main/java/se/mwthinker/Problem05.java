@@ -43,10 +43,9 @@ record Position (int x, int y) {
         if (other == this) {
             return true;
         }
-        if (!(other instanceof Position)) {
+        if (!(other instanceof Position p)) {
             return false;
         }
-        Position p = (Position) other;
         return x == p.x && y == p.y;
     }
 
@@ -87,7 +86,7 @@ record Entry(Position start, Position end) {
 }
 
 class Board {
-    private HashMap<Position, Integer> posToValue = new HashMap<>();
+    private final HashMap<Position, Integer> posToValue = new HashMap<>();
 
     Board(List<Entry> entries, EnumSet<Direction> directions) {
         entries.stream()
@@ -109,17 +108,17 @@ class Board {
 
     @Override
     public String toString() {
-        int maxX = posToValue.isEmpty() ? 0 : Collections.max(posToValue.keySet().stream().map(pos -> pos.x()).toList());
-        int maxY = posToValue.isEmpty() ? 0 : Collections.max(posToValue.keySet().stream().map(pos -> pos.y()).toList());
+        int maxX = posToValue.isEmpty() ? 0 : Collections.max(posToValue.keySet().stream().map(Position::x).toList());
+        int maxY = posToValue.isEmpty() ? 0 : Collections.max(posToValue.keySet().stream().map(Position::y).toList());
 
-        String str = "";
+        StringBuilder str = new StringBuilder();
         for (int y = 0; y <= maxY; ++y) {
             for (int x = 0; x <= maxX; ++x) {
-                str += posToValue.getOrDefault(new Position(x, y), 0) + " ";
+                str.append(posToValue.getOrDefault(new Position(x, y), 0)).append(" ");
             }
-            str += "\n";
+            str.append("\n");
         }
-        return str;
+        return str.toString();
     }
 
 }
@@ -133,7 +132,7 @@ public class Problem05 implements Callable<Integer> {
     @Option(names = { "-p", "--print" }, description = "the file containing the problem data")
     private boolean print = false;
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         int exitCode = new CommandLine(new Problem05()).execute(args);
         System.exit(exitCode);
     }
@@ -180,7 +179,7 @@ public class Problem05 implements Callable<Integer> {
     }
 
     private Position parsePosition(String str) {
-        String posStrings[] = str.split(",");
+        String[] posStrings = str.split(",");
         if (posStrings.length != 2) {
             throw new RuntimeException();
         }
@@ -199,7 +198,7 @@ public class Problem05 implements Callable<Integer> {
             throw new RuntimeException("No found file");
         }
 
-        Scanner sc = null;
+        Scanner sc;
         try {
             sc = new Scanner(datafile);
         } catch (FileNotFoundException e) {
@@ -215,7 +214,7 @@ public class Problem05 implements Callable<Integer> {
                 continue;
             }
 
-            String str[] = row.split("->");
+            String[] str = row.split("->");
             if (str.length != 2) {
                 throw new RuntimeException();
             }
